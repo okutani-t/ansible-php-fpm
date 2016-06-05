@@ -1,0 +1,20 @@
+---
+- name: install the php-fpm
+  yum: name=php-fpm state=latest enablerepo=remi,remi-php56
+
+- name: start and enabled php-fpm service
+  service: name=php-fpm state=started enabled=yes
+
+- name: rewrite a www.conf for nginx
+  lineinfile: >
+    dest=/etc/php-fpm.d/www.conf
+    state=present
+    backrefs=yes
+    regexp='{{ item.regexp }}'
+    line='{{ item.line }}'
+  with_items:
+  - regexp: 'user *= *apache'
+    line: 'user = nginx'
+  - regexp: 'group *= *apache'
+    line: 'group = nginx'
+  notify: reload php-fpm
